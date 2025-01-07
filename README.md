@@ -1,124 +1,95 @@
-# API de Gerenciamento de Livros
 
-  
+# API de Gerenciamento de Livros (com PostgreSQL e GORM)
 
-Este projeto é uma API REST para gerenciar livros, desenvolvida em **GoLang**, utilizando **Gin Framework** e **PostgreSQL**. A API permite criar, listar, atualizar e deletar livros.
-
-  
+Este projeto é uma API REST para gerenciar livros, desenvolvida em *GoLang, utilizando **Gin Framework* e *PostgreSQL*. A API permite criar, listar, atualizar e deletar livros.
 
 ## Funcionalidades
 
-  
-
--  **Criar Livro:** Adiciona um novo livro.
-
--  **Listar Livros:** Retorna todos os livros cadastrados.
-
--  **Atualizar Livro:** Atualiza informações de um livro existente.
-
--  **Deletar Livro:** Remove um livro do sistema.
-
-  
+- *Criar Livro:* Adiciona um novo livro.
+- *Listar Livros:* Retorna todos os livros cadastrados.
+- *Atualizar Livro:* Atualiza informações de um livro existente.
+- *Deletar Livro:* Remove um livro do sistema.
 
 Cada livro possui os seguintes campos:
-
--  **Título** (string): Nome do livro.
-
--  **Autor** (string): Autor do livro.
-
--  **Categoria** (string): Gênero ou categoria literária.
-
--  **Sinopse** (string): Breve descrição ou resumo do livro.
-
-  
+- *Título* (string): Nome do livro.
+- *Autor* (string): Autor do livro.
+- *Categoria* (string): Gênero ou categoria literária.
+- *Sinopse* (string): Breve descrição ou resumo do livro.
 
 ## Configuração
 
-  
-
 ### Pré-requisitos
-
--  **GoLang** (1.18 ou superior)
-
--  **PostgreSQL** (13 ou superior)
-
-  
+- *GoLang* (1.18 ou superior)
+- *PostgreSQL* (13 ou superior)
 
 ### Passos para Configurar
 
-  
-
 1. Instale o PostgreSQL:
-
-- Baixe e instale do site oficial: [postgresql.org](https://www.postgresql.org/download/).
-
-  
+   - Baixe e instale do site oficial: [postgresql.org](https://www.postgresql.org/download/).
 
 2. Crie o banco de dados:
-
-```bash
-
-psql -U postgres
-
-CREATE DATABASE desafio_golang;
-
-```
-
-  
+   bash
+   psql -U postgres
+   CREATE DATABASE desafio_golang;
+   
 
 3. Configure a aplicação:
+   - No código, ajuste o DSN na função connectDB com suas credenciais do PostgreSQL.
 
-- No código, ajuste o DSN na função `connectDB` com suas credenciais do PostgreSQL.
-
-  
-
-4.  **Migração Automática de Tabelas**:
-
-- Não é necessário criar manualmente as tabelas no banco de dados. O método `AutoMigrate` do GORM é usado para criar e configurar as tabelas automaticamente na primeira execução da aplicação. Isso simplifica o processo de configuração inicial e evita erros manuais na estrutura do banco de dados.
-
-  
+4. *Migração Automática de Tabelas*:
+   - Não é necessário criar manualmente as tabelas no banco de dados. O método AutoMigrate do GORM é usado para criar e configurar as tabelas automaticamente na primeira execução da aplicação. Isso simplifica o processo de configuração inicial e evita erros manuais na estrutura do banco de dados.
+   - *Exemplo no código:*
+     go
+     db.AutoMigrate(&Book{})
+     
 
 ## Como Rodar
 
-  
-
 1. Instale as dependências:
-
-```bash
-
-go mod tidy
-
-```
-
-  
+   bash
+   go mod tidy
+   
 
 2. Inicie a aplicação:
+   bash
+   go run main.go
+   
 
-```bash
+A API estará disponível em: http://localhost:8080
 
-go run main.go
+## Documentação das Rotas
 
-```
-
+### POST /books
+*Descrição:* Adiciona um novo livro.
+- *Corpo da Requisição:*
+  json
+  {
+      "title": "O Senhor dos Anéis",
+      "author": "J.R.R. Tolkien",
+      "category": "Fantasia",
+      "synopsis": "Uma história fantástica na Terra Média."
+  }
   
+- *Status de Sucesso:* 201 (Created)
 
-A API estará disponível em: `http://localhost:8080`
+### GET /books
+*Descrição:* Retorna a lista de todos os livros cadastrados.
 
+### PUT /books/:id
+*Descrição:* Atualiza um livro específico.
+- *Corpo da Requisição:*
+  Apenas os campos que precisam ser alterados.
+  json
+  {
+      "title": "O Hobbit"
+  }
   
+- *Status de Sucesso:* 200 (OK)
 
-## Rotas
-
-  
-
--  **POST /books**: Cadastrar um livro.
-
--  **GET /books**: Listar todos os livros.
-
--  **PUT /books/:id**: Atualizar um livro por ID.
-
--  **DELETE /books/:id**: Remover um livro por ID.
-
-  
+### DELETE /books/:id
+*Descrição:* Remove um livro específico do sistema.
+- *Status de Sucesso:* 200 (OK)
+-
 
 ## Observações e Considerações Pessoais
 
