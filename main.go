@@ -2,22 +2,16 @@ package main
 
 import (
 	"fmt"
+	"desafio-golang/models"
 	"log"
-
+	
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
+	_"github.com/jinzhu/gorm/dialects/postgres"
 )
 
 var db *gorm.DB
 
-type Book struct {
-	ID       uint   `json:"id"`
-	Title    string `json:"title"`
-	Author   string `json:"author"`
-	Category string `json:"category"`
-	Synopsis string `json:"synopsis"`
-}
 
 func connectDB() {
 	var err error
@@ -28,7 +22,7 @@ func connectDB() {
 	}
 	fmt.Println("Database connection successfully established")
 
-	db.AutoMigrate(&Book{})
+	db.AutoMigrate(&models.Book{})
 }
 
 func main() {
@@ -48,7 +42,7 @@ func main() {
 	r.Run(":8080")
 }
 func createBook(c *gin.Context) {
-	var book Book
+	var book models.Book
 	if err := c.ShouldBindJSON(&book); err != nil {
 		c.JSON(400, gin.H{"error": "Invalid Data"})
 		return
@@ -60,7 +54,7 @@ func createBook(c *gin.Context) {
 	c.JSON(201, gin.H{"message": "Book registered successfully"})
 }
 func listBooks(c *gin.Context) {
-	var books []Book
+	var books []models.Book
 	if err := db.Find(&books).Error; err != nil {
 		c.JSON(500, gin.H{"error": "Cannot list the books"})
 		return
@@ -69,7 +63,7 @@ func listBooks(c *gin.Context) {
 }
 func listOneBook(c *gin.Context) {
 	id := c.Param("id")
-	var book Book
+	var book models.Book
 	if err := db.First(&book, id).Error; err != nil {
 		c.JSON(404, gin.H{"error": "Book not found"})
 		return
@@ -78,12 +72,12 @@ func listOneBook(c *gin.Context) {
 }
 func updateBook(c *gin.Context) {
 	id := c.Param("id")
-	var book Book
+	var book models.Book
 	if err := db.First(&book, id).Error; err != nil {
 		c.JSON(404, gin.H{"error": "Book not found"})
 		return
 	}
-	var updatedData Book
+	var updatedData models.Book
 	if err := c.ShouldBindJSON(&updatedData); err != nil {
 		c.JSON(400, gin.H{"error": "Invalid Data"})
 		return
@@ -110,7 +104,7 @@ func updateBook(c *gin.Context) {
 }
 func deleteBook(c *gin.Context) {
 	id := c.Param("id")
-	if err := db.Delete(&Book{}, id).Error; err != nil {
+	if err := db.Delete(&models.Book{}, id).Error; err != nil {
 		c.JSON(500, gin.H{"error": "Failed to delete book record"})
 		return
 	}

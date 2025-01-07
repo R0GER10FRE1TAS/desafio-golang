@@ -1,6 +1,6 @@
 
 
-GET http://localhost:8080/books/1
+GET http://localhost:8080/books
 Content-Type: application/json
 
 # POST http://localhost:8080/books
@@ -13,13 +13,12 @@ Content-Type: application/json
 #     "Synopsis" : "Nem tudo que achamos realmente é"
 # }
 
-# PUT http://localhost:8080/books/1
-# Content-Type: application/json
+PUT http://localhost:8080/books/4
+Content-Type: application/json
 
-# {
-#     "Synopsis" : "Uma fantástica história da Terra Média"
-# }
+{
+    "Synopsis" : "Sinopse de teste"
+}
 
 # DELETE http://localhost:8080/books/2
 # Content-Type: application/json
-
