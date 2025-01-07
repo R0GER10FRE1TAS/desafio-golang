@@ -7,6 +7,7 @@ Este projeto é uma API REST para gerenciar livros, desenvolvida em *GoLang, uti
 
 - *Criar Livro:* Adiciona um novo livro.
 - *Listar Livros:* Retorna todos os livros cadastrados.
+- *Listar um Livro:* Lista um livro específico.
 - *Atualizar Livro:* Atualiza informações de um livro existente.
 - *Deletar Livro:* Remove um livro do sistema.
 
@@ -74,6 +75,10 @@ A API estará disponível em: http://localhost:8080
 
 ### GET /books
 *Descrição:* Retorna a lista de todos os livros cadastrados.
+
+### GET /books/:id
+*Descrição:* Retorna um livro específico da lista de cadastrados.
+
 
 ### PUT /books/:id
 *Descrição:* Atualiza um livro específico.
