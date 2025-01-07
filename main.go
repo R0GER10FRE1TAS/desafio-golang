@@ -2,93 +2,106 @@ package main
 
 
 import(
-	"net/http"
-	"strconv"
-
+	"fmt"
+	"log"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
+var db *gorm.DB
+
 type Book struct {
-	ID		uint	`json:"id"`
-	Title	string	`json:"title"`
-	Category string	`json:"category"`
-	Author	string	`json:"author"`
-	Synopsis string	`json:"synopsis"`
+	ID		 uint   `json:"id"`
+	Title	 string `json:"title"`
+	Author	 string `json:"author"`
+	Category string `json:"category"`
+	Synopsis string `json:"synopsis"`
 }
 
-var books []Book
+func connectDB() {
+	var err error
+	dsn := "host=localhost user=postgres password=087081 dbname=desafio_golang port=5432 sslmode=disable"
+	db, err = gorm.Open("postgres", dsn)
+	if err != nil {
+		log.Fatalf("Database connection failed: %v", err)
+	}
+	fmt.Println("Database connection successfully established")
+
+	db.AutoMigrate(&Book{})
+}
 
 func main() {
+	connectDB()
 	r := gin.Default()
 
-	r.POST("/books", func(c *gin.Context){
-		var newBook Book
-		if err := c.ShouldBindJSON(&newBook); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-		
-		newBook.ID = uint(len(books) + 1)
-		books = append(books, newBook)
-		
-		c.JSON(http.StatusCreated, newBook)
-	})
+	r.POST("/books", createBook)
 
-	r.GET("/books", func(c *gin.Context) {
-		c.JSON(http.StatusOK, books)
-	})
+	r.GET("/books", listBooks)
 
-	r.GET("/books/:id", func(c *gin.Context) {
-		id, err := strconv.Atoi(c.Param("id"))
-		if err != nil || id < 1 || id > len(books) + 1{
-			c.JSON(http.StatusNotFound, gin.H{"error": "Book not found"})
-			return
-		}
-		c.JSON(http.StatusOK, books[id-1])
-	})
+	r.PUT("/books/:id", updateBook)
 
-	r.PUT("/books/:id", func(c *gin.Context) {
-		id, err :=  strconv.Atoi(c.Param("id"))
-		if err != nil || id < 1 || id > len(books) + 1{
-			c.JSON(http.StatusNotFound, gin.H{"error": "Book not found"})
-			return
-		}
-		var updatedFields Book
-		if err := c.ShouldBindJSON(&updatedFields); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-		for i, book := range books {
-			if book.ID == uint(id) {
-				// Atualiza apenas os campos enviados
-				if updatedFields.Title != "" {
-					books[i].Title = updatedFields.Title
-				}
-				if updatedFields.Category != "" {
-					books[i].Category = updatedFields.Category
-				}
-				if updatedFields.Author != "" {
-					books[i].Author = updatedFields.Author
-				}
-				if updatedFields.Synopsis != "" {
-					books[i].Synopsis = updatedFields.Synopsis
-				}
-	
-				c.JSON(http.StatusOK, books[i])
-				return
-			}
-		}
-	})
+	r.DELETE("/books/:id", deleteBook)
 
-	r.DELETE("/books/:id", func(c *gin.Context) {
-		id, err := strconv.Atoi(c.Param("id"))
-		if err != nil || id < 1 || id > len(books) + 1{
-			c.JSON(http.StatusNotFound, gin.H{"error": "Book not found"})
-			return
-		}
-		books = append(books[:id-1], books[id:]...)
-		c.JSON(http.StatusOK, gin.H{"message": "Book deleted successfully"})
-	})
+	r.Run(":8080")
+}
+func createBook(c *gin.Context) {
+	var book Book
+	if err := c.ShouldBindJSON(&book); err != nil {
+		c.JSON(400, gin.H{"error": "Invalid Data"})
+		return
+	}
+	if err := db.Create(&book).Error; err != nil {
+		c.JSON(500, gin.H{"error": "Book's record failed"})
+		return
+	}
+	c.JSON(201, gin.H{"message": "Book registered successfully"})
+}
+func listBooks(c *gin.Context) {
+	var books []Book
+	if err := db.Find(&books).Error; err != nil {
+		c.JSON(500, gin.H{"error": "Cannot list the books"})
+		return
+	}
+	c.JSON(200, books)
+}
+func updateBook(c *gin.Context) {
+	id := c.Param("id")
+	var book Book
+	if err := db.First(&book, id).Error; err != nil {
+		c.JSON(404, gin.H{"error": "Book not found"})
+		return
+	}
+	var updatedData Book
+	if err := c.ShouldBindJSON(&updatedData); err != nil {
+		c.JSON(400, gin.H{"error": "Invalid Data"})
+		return
+	}
+	if updatedData.Title != "" { 
+        book.Title = updatedData.Title
+	}
+	if updatedData.Category != "" { 
+        book.Category = updatedData.Category
+	}
+	if updatedData.Author != "" { 
+        book.Author = updatedData.Author
+	}
+	if updatedData.Synopsis != "" { 
+        book.Synopsis = updatedData.Synopsis
+	}
 
-	r.Run()
+	if err := db.Save(&book). Error; err != nil {
+		c.JSON(500, gin.H{"error": "Book record update failed"})
+		return
+	}
+
+	c.JSON(200, gin.H{"message": "Book record updated successfully"})
+}
+func deleteBook(c *gin.Context) {
+	id := c.Param("id")
+	if err := db.Delete(&Book{}, id).Error; err != nil {
+		c.JSON(500, gin.H{"error": "Failed to delete book record"})
+		return
+	}
+	c.JSON(200, gin.H{"message": "Book record deleted successfully"})
 }
